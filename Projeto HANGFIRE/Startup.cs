@@ -64,14 +64,26 @@ namespace Projeto_HANGFIRE
 
             app.UseHangfireDashboard();
 
+            // São executados uma unica vez
             BackgroundJob.Enqueue(() => MeuPrimeiroFireAndForget());
+
+            // Faz um agendamento do job e faz de tempos em tempos que foi definido. Pode ser por hora/ dias/mes /ano
+            RecurringJob.AddOrUpdate(() => Console.Write("Recurring funcionando"), Cron.Daily);
+
+            // Job para realizar em dois dias
+            BackgroundJob.Schedule(() => Console.Write("Schedule job funcionando"), TimeSpan.FromDays(2));
+
+            // Continuations são as tarefas filhas que sao agendada para ser executada apos a execução de uma tarefa pai.
+            string jobId = BackgroundJob.Enqueue(() => Console.Write("Tarefa pai"));
+            BackgroundJob.ContinueJobWith(jobId, () => Console.Write("tarefa filha"));
+
         }
 
         public async Task MeuPrimeiroFireAndForget()
         {
             await Task.Run(() =>
             {
-                throw new Exception("Meu primeiro fire and forget");
+                Console.Write("Meu primeiro fire and forget funcionando");
             });
         }
     }
